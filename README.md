@@ -1,4 +1,4 @@
-﻿# OledGuard
+# OledGuard
 
 **Per-screen OLED burn-in guard for Windows.** When a screen sits idle, OledGuard covers it with black. As soon as you use that screen again, the black goes away. Each screen keeps its own idle timer, so the screen you're working on stays on while the others go dark.
 
@@ -34,8 +34,8 @@ The installer does the following:
 |---|---|
 | Copies the program | `C:\Program Files\OledGuard\OledGuard.exe` |
 | Starts it at every logon | A Task Scheduler task named `OledGuard`, run with administrator rights and no UAC prompt |
-| Adds a shortcut | Start Menu â†’ **OledGuard**. Opening it while OledGuard is running brings up the screen picker. |
-| Adds an uninstall entry | Settings â†’ Apps â†’ Installed apps â†’ **OledGuard** |
+| Adds a shortcut | Start Menu → **OledGuard**. Opening it while OledGuard is running brings up the screen picker. |
+| Adds an uninstall entry | Settings → Apps → Installed apps → **OledGuard** |
 
 To run it without installing, choose **No** when asked. It then runs from wherever the exe is, until you log off.
 
@@ -45,7 +45,7 @@ Windows doesn't let a normal program see keyboard or mouse input that goes to an
 
 ### SmartScreen and antivirus
 
-The exe isn't code-signed, so Windows SmartScreen may show "Windows protected your PC" the first time. Click **More info â†’ Run anyway**.
+The exe isn't code-signed, so Windows SmartScreen may show "Windows protected your PC" the first time. Click **More info → Run anyway**.
 
 OledGuard watches the mouse and keyboard and starts at logon, so security software may treat it as suspicious. Two design choices reduce this:
 - it doesn't use a keyboard hook;
@@ -58,11 +58,11 @@ If your antivirus still flags it, you can read every line of the [source](OledGu
 | Action | How |
 |---|---|
 | Blank all guarded screens now | Left-click the cat in the tray (it may be under the **^** overflow arrow) |
-| Choose screens and timeouts | Tray menu â†’ **Choose screens...**, or the Start Menu shortcut |
-| Blank or wake one screen, guard it or not, set its timeout | Tray menu â†’ the screen's own submenu |
-| Allow blanking under fullscreen apps | Tray menu â†’ untick **Keep awake under fullscreen apps** |
-| Turn autostart off or on | Tray menu â†’ **Start with Windows** |
-| See what it did | Tray menu â†’ **Open log** |
+| Choose screens and timeouts | Tray menu → **Choose screens...**, or the Start Menu shortcut |
+| Blank or wake one screen, guard it or not, set its timeout | Tray menu → the screen's own submenu |
+| Allow blanking under fullscreen apps | Tray menu → untick **Keep awake under fullscreen apps** |
+| Turn autostart off or on | Tray menu → **Start with Windows** |
+| See what it did | Tray menu → **Open log** |
 
 ### Command line
 
@@ -87,7 +87,7 @@ Screens are numbered left to right. The picker shows each screen's number on tha
 
 ## Uninstall
 
-Go to Settings â†’ Apps â†’ Installed apps â†’ **OledGuard** â†’ Uninstall, or run `OledGuard.exe --uninstall`. You'll be asked whether to delete your settings and log as well.
+Go to Settings → Apps → Installed apps → **OledGuard** → Uninstall, or run `OledGuard.exe --uninstall`. You'll be asked whether to delete your settings and log as well.
 
 ## Privacy
 
