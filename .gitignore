@@ -1,3 +1,5 @@
 # build output (the exe is attached to GitHub releases instead)
 *.exe
 *.pdb
+# Task Scheduler exports contain the local user name and SID
+*.task.xml

@@ -318,19 +318,22 @@ class App : ApplicationContext
     public void ShowPicker()
     {
         if (picker != null && !picker.IsDisposed) { picker.Activate(); return; }
+        WakeAll("picker"); // the numbers must be visible on every screen
         picker = new ScreenPicker(mons, ApplyScreens);
         picker.Show();
         picker.Activate();
     }
 
-    void ApplyScreens(Dictionary<Mon, bool> enabled, Dictionary<Mon, int> timeouts)
+    // keyed by monitor id, not Mon: a display change while the picker is open replaces the Mon objects
+    void ApplyScreens(Dictionary<string, bool> enabled, Dictionary<string, int> timeouts)
     {
         foreach (var m in mons)
         {
             bool on;
             int secs;
-            if (enabled.TryGetValue(m, out on)) { m.Enabled = on; SetValue("Monitor." + m.Id + ".Enabled", on ? "1" : "0"); }
-            if (timeouts.TryGetValue(m, out secs)) { m.TimeoutSec = secs; SetValue("Monitor." + m.Id + ".Timeout", secs.ToString()); }
+            if (!enabled.ContainsKey(m.Id)) continue;
+            if (enabled.TryGetValue(m.Id, out on)) { m.Enabled = on; SetValue("Monitor." + m.Id + ".Enabled", on ? "1" : "0"); }
+            if (timeouts.TryGetValue(m.Id, out secs)) { m.TimeoutSec = secs; SetValue("Monitor." + m.Id + ".Timeout", secs.ToString()); }
             m.Last = Now;
             if (!m.Enabled) Wake(m, "unguarded");
         }
@@ -888,7 +891,7 @@ class ScreenPicker : Form
 {
     readonly List<NumberTag> tags = new List<NumberTag>();
 
-    public ScreenPicker(List<Mon> mons, Action<Dictionary<Mon, bool>, Dictionary<Mon, int>> apply)
+    public ScreenPicker(List<Mon> mons, Action<Dictionary<string, bool>, Dictionary<string, int>> apply)
     {
         Text = "OledGuard - choose screens";
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -910,23 +913,27 @@ class ScreenPicker : Form
         }, 0, 0);
         table.SetColumnSpan(table.GetControlFromPosition(0, 0), 2);
 
-        var boxes = new Dictionary<Mon, CheckBox>();
-        var combos = new Dictionary<Mon, ComboBox>();
+        var boxes = new Dictionary<string, CheckBox>();
+        var combos = new Dictionary<string, ComboBox>();
+        var choices = new Dictionary<string, List<int>>();
         int row = 1;
         foreach (var m in mons)
         {
             bool oled = m.Name.IndexOf("OLED", StringComparison.OrdinalIgnoreCase) >= 0;
             var cb = new CheckBox { Text = m.Label + (oled ? "  (OLED)" : ""), Checked = m.Enabled, AutoSize = true, Margin = new Padding(0, 6, 16, 6) };
             var combo = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130 };
-            foreach (int t in App.Timeouts) combo.Items.Add("after " + (t < 60 ? t + " s" : t / 60 + " min"));
-            int idx = Array.IndexOf(App.Timeouts, m.TimeoutSec);
-            combo.SelectedIndex = idx >= 0 ? idx : Array.IndexOf(App.Timeouts, 120);
+            var values = App.Timeouts.ToList();
+            if (!values.Contains(m.TimeoutSec)) values.Add(m.TimeoutSec); // keep a hand-edited timeout
+            values.Sort();
+            foreach (int t in values) combo.Items.Add("after " + (t < 60 || t % 60 != 0 ? t + " s" : t / 60 + " min"));
+            combo.SelectedIndex = values.IndexOf(m.TimeoutSec);
             combo.Enabled = cb.Checked;
             cb.CheckedChanged += (s, e) => combo.Enabled = cb.Checked;
             table.Controls.Add(cb, 0, row);
             table.Controls.Add(combo, 1, row);
-            boxes[m] = cb;
-            combos[m] = combo;
+            boxes[m.Id] = cb;
+            combos[m.Id] = combo;
+            choices[m.Id] = values;
             row++;
         }
 
@@ -936,7 +943,7 @@ class ScreenPicker : Form
         save.Click += (s, e) =>
         {
             apply(boxes.ToDictionary(kv => kv.Key, kv => kv.Value.Checked),
-                  combos.ToDictionary(kv => kv.Key, kv => App.Timeouts[kv.Value.SelectedIndex]));
+                  combos.ToDictionary(kv => kv.Key, kv => choices[kv.Key][kv.Value.SelectedIndex]));
             Close();
         };
         cancel.Click += (s, e) => Close();
@@ -1043,7 +1050,8 @@ static class Installer
             if (!RunningFromInstallDir) File.Copy(Application.ExecutablePath, InstalledExe, true);
             int rc = CreateTask(InstalledExe);
             if (rc != 0) throw new Exception("creating the logon task failed (schtasks exit " + rc + ")");
-            CreateShortcut(StartMenuLink, InstalledExe);
+            try { CreateShortcut(StartMenuLink, InstalledExe); }
+            catch (Exception ex) { App.Log("start menu shortcut: " + ex.Message); } // optional, don't fail the install
             using (var k = Registry.LocalMachine.CreateSubKey(UninstallKey))
             {
                 k.SetValue("DisplayName", "OledGuard");

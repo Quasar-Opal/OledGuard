@@ -21,6 +21,7 @@
 
 - Windows 10 version 1703 or later, or Windows 11.
 - .NET Framework 4.8, which is already part of Windows 10 and 11. There is nothing extra to install.
+- **Install from an administrator account.** The logon task is created for the account that runs the installer. A standard user who installs by typing another account's admin password would set up the task for that other account. In that case, use **No** (run without installing) or install from the admin account.
 
 ## Install
 
