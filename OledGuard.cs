@@ -574,6 +574,20 @@ class App : ApplicationContext
     void BlankAll(string why) { foreach (var m in mons.Where(x => x.Enabled)) Blank(m, why); }
     void WakeAll(string why) { foreach (var m in mons) Wake(m, why); }
 
+    void SetGuardAll(bool on)
+    {
+        foreach (var m in mons)
+        {
+            if (m.Enabled == on) continue;
+            m.Enabled = on;
+            m.Last = Now;
+            SetValue("Monitor." + m.Id + ".Enabled", on ? "1" : "0");
+            if (!on) Wake(m, "unguarded");
+        }
+        Log("guard all = " + on);
+        UpdateIcon();
+    }
+
     // wParam: 1 blank, 2 wake, 3 toggle, 4 exit, 5 screen picker; lParam: screen number, 0 = all guarded screens
     public void Command(int cmd, int index)
     {
@@ -645,6 +659,8 @@ class App : ApplicationContext
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Blank all now", null, (s, e) => BlankAll("menu")) { Font = new Font(menu.Font, FontStyle.Bold) });
         menu.Items.Add(new ToolStripMenuItem("Wake all", null, (s, e) => WakeAll("menu")) { Enabled = mons.Any(m => m.Blanked) });
+        bool anyGuarded = mons.Any(m => m.Enabled);
+        menu.Items.Add(new ToolStripMenuItem(anyGuarded ? "Unguard all" : "Guard all", null, (s, e) => SetGuardAll(!anyGuarded)));
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Keep awake under fullscreen apps", null, (s, e) =>
         {
