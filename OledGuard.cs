@@ -33,8 +33,8 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("OledGuard")]
 [assembly: AssemblyCompany("OledGuard")]
 [assembly: AssemblyCopyright("Written by Claude (Anthropic). MIT License, provided as-is.")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]
 
 static class Native
 {
@@ -982,7 +982,7 @@ class ScreenPicker : Form
 // the task runs the exe elevated, so it must not live where a normal process could replace it.
 static class Installer
 {
-    public const string Version = "1.0.0";
+    public const string Version = "1.0.1";
     const string TaskName = "OledGuard";
     const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\OledGuard";
     public static readonly string InstallDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OledGuard");
